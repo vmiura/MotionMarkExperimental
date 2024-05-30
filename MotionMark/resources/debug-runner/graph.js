@@ -469,6 +469,7 @@ Utilities.extendObject(window.benchmarkController, {
 
         // Data
         var allData = samples;
+        var animData = samples.filter((sample) => sample['frameType'] == Strings.json.animationFrameType);
         var filteredData = samples.filter(function (sample) {
             return "smoothedFrameLength" in sample;
         });
@@ -495,8 +496,8 @@ Utilities.extendObject(window.benchmarkController, {
                 .attr("r", pointRadius + 2);
         }
 
-        addData("complexity", allData, function(d) { return yLeft(d.complexity); }, 2);
-        addData("rawFPS", allData, function(d) { return yRight(d.frameLength); }, 1);
+        addData("complexity", animData, function(d) { return yLeft(d.complexity); }, 2);
+        addData("rawFPS", animData, function(d) { return yRight(d.frameLength); }, 1);
         addData("filteredFPS", filteredData, function(d) { return yRight(d.smoothedFrameLength); }, 2);
 
         // regressions
