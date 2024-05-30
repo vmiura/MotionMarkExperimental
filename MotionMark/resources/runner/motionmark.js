@@ -187,8 +187,10 @@
             experimentResult[Strings.json.measurements.stdev] = timeComplexity.standardDeviation();
             experimentResult[Strings.json.measurements.percent] = timeComplexity.percentage();
 
+            var frameTypeIndex = regressionResult.samples.fieldMap[Strings.json.frameType];
+            var filteredData = regressionResult.samples.data.filter((sample) => sample[frameTypeIndex] == Strings.json.animationFrameType);
             const bootstrapIterations = 2500;
-            var bootstrapResult = Regression.bootstrap(regressionResult.samples.data, bootstrapIterations, function(resampleData) {
+            var bootstrapResult = Regression.bootstrap(filteredData, bootstrapIterations, function(resampleData) {
                 var complexityIndex = regressionResult.samples.fieldMap[Strings.json.complexity];
                 resampleData.sort(function(a, b) {
                     return a[complexityIndex] - b[complexityIndex];
@@ -196,7 +198,7 @@
 
                 var resample = new SampleData(regressionResult.samples.fieldMap, resampleData);
                 var bootstrapRegressionResult = findRegression(resample, predominantProfile);
-		if (bootstrapRegressionResult.regression.t2 < 0) {
+		        if (bootstrapRegressionResult.regression.t2 < 0) {
                   // A positive slope means the frame rate decreased with increased complexity (which is the expected
                   // benavior). OTOH, a negative slope means the framerate increased as the complexity increased. This
                   // likely means the max complexity needs to be increased. None-the-less, if the slope is negative use
