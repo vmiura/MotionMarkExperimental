@@ -486,6 +486,9 @@ RampController = Utilities.createSubclass(Controller,
                 var nextTierComplexity = Math.max(Math.round(Math.pow(10, this._tier)), currentComplexity + 1);
                 stage.tune(nextTierComplexity - currentComplexity);
 
+                if (stage.complexity() != nextTierComplexity)
+                    this._maximumStageComplexity = stage.complexity();
+
                 // Some tests may be unable to go beyond a certain capacity. If so, don't keep moving up tiers
                 if (stage.complexity() - currentComplexity > 0 || nextTierComplexity == 1) {
                     this._tierStartTimestamp = timestamp;
@@ -517,6 +520,13 @@ RampController = Utilities.createSubclass(Controller,
                 // If the browser is capable of handling the most complex version of the test, use that
                 this._maximumComplexity = currentComplexity;
             }
+
+            if (this._maximumStageComplexity) {
+                // If we reached the maximum stage complexity, set the maximum such
+                // that the stage complexity is in the middle of the ramp.
+                this._maximumComplexity = Math.round(this._maximumStageComplexity * 1.5);
+            }
+
             this._possibleMaximumComplexity = this._maximumComplexity;
 
             // If we get ourselves onto a ramp where the maximum complexity does not yield slow enough FPS,
@@ -612,8 +622,18 @@ RampController = Utilities.createSubclass(Controller,
             this._maximumComplexity = Math.max(Math.round(.8 * this._maximumComplexity), this._minimumComplexity + 5);
         }
 
+        if (this._maximumStageComplexity) {
+            // If we reached the maximum stage complexity, set the maximum such
+            // that the stage complexity is in the middle of the ramp.
+            this._maximumComplexity = Math.min(Math.round(this._maximumStageComplexity * 1.5), this._maximumComplexity);
+        }
+
         // Next ramp
         stage.tune(this._maximumComplexity - stage.complexity());
+
+        if (stage.complexity() != this._maximumComplexity)
+            this._maximumStageComplexity = stage.complexity();
+
         this._rampDidWarmup = false;
         // Start timestamp represents start of ramp iteration and warm up
         this._rampStartTimestamp = timestamp;
